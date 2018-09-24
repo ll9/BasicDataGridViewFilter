@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,8 +15,9 @@ namespace SaveJson
 {
     public partial class Form1 : Form
     {
-        public string JsonFilePath => $"{System.AppDomain.CurrentDomain.BaseDirectory}\\save.json";
+        public string JsonFilePath => $"{AppDomain.CurrentDomain.BaseDirectory}\\save.json";
         BindingList<Person> People { get; set; } = new BindingList<Person>();
+        List<Func<Person, bool>> Filters = new List<Func<Person, bool>>();
 
         public Form1()
         {
@@ -40,6 +42,38 @@ namespace SaveJson
             var json = JsonConvert.SerializeObject(People);
             File.WriteAllText(JsonFilePath, json);
 
+        }
+
+        private void FilterBeneButton_Click(object sender, EventArgs e)
+        {
+            Filters.Add(person => person.Name == "Bene");
+
+            FilterGrid();
+        }
+
+
+        private void GenderFilterButton_Click(object sender, EventArgs e)
+        {
+            Filters.Add(person => person.Gender == Gender.Male);
+
+            FilterGrid();
+        }
+
+        private void Unfilter_Click(object sender, EventArgs e)
+        {
+            Filters.Clear();
+            FilterGrid();
+        }
+
+        private void FilterGrid()
+        {
+            var filteredBindingList = new BindingList<Person>(People);
+
+            foreach (var filter in Filters)
+            {
+                filteredBindingList = new BindingList<Person>(filteredBindingList.Where(filter).ToList());
+            }
+            personDataGridView.DataSource = filteredBindingList;
         }
     }
 }
