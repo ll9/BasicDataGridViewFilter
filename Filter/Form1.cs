@@ -15,6 +15,7 @@ namespace SaveJson
     public partial class Form1 : Form
     {
         public string JsonFilePath => $"{System.AppDomain.CurrentDomain.BaseDirectory}\\save.json";
+        BindingList<Person> People { get; set; } = new BindingList<Person>();
 
         public Form1()
         {
@@ -24,26 +25,21 @@ namespace SaveJson
             if (File.Exists(JsonFilePath))
             {
                 var json = File.ReadAllText(JsonFilePath);
-                var Person = JsonConvert.DeserializeObject<Person>(json);
+                var people = JsonConvert.DeserializeObject<BindingList<Person>>(json);
 
-                birthdayTextBox.Text = Person.Birthday.ToString();
-                genderTextBox.Text = Person.Gender.ToString();
-                idTextBox.Text = Person.Id.ToString();
-                nameTextBox.Text = Person.Name.ToString();
+                foreach (var person in people)
+                {
+                    People.Add(person);
+                }
             }
+            personDataGridView.DataSource = People;
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            DateTime Birthday = DateTime.Parse(birthdayTextBox.Text);
-            var Gender = (Gender) Enum.Parse(typeof(Gender), genderTextBox.Text, true);
-            var Id = int.Parse(idTextBox.Text);
-            var Name = nameTextBox.Text;
-
-            var Person = new Person(Id, Name, Birthday, Gender);
-
-            var json = JsonConvert.SerializeObject(Person);
+            var json = JsonConvert.SerializeObject(People);
             File.WriteAllText(JsonFilePath, json);
+
         }
     }
 }
